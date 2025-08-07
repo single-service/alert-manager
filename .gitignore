@@ -1,0 +1,7 @@
+tests/*
+.envs/*
+env.sh
+local_scripts.sh
+venv/*
+.envs
+.env

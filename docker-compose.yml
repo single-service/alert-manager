@@ -1,0 +1,42 @@
+volumes:
+  mb_postgres_data:
+  test_postgres_data:
+
+
+services:
+
+  metabasedb:
+    image: postgres
+    volumes:
+      - mb_postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .envs/.metabasedb
+    ports:
+      - "5434:5432"
+
+  metabase:
+    image: metabase/metabase:latest
+    restart: always
+    env_file:
+      - .envs/.metabase
+    ports:
+      - 3000:3000
+    depends_on:
+      - metabasedb
+
+  testdb:
+    image: postgres
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .envs/.testdb
+    ports:
+      - "5435:5432"
+
+  alert-manager:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .envs/.alert_manager
+    ports:
+      - "8005:8000"
