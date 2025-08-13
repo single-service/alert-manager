@@ -103,13 +103,16 @@ async def simple_alert(
 # ---------- startup: выставляем web-hookи ----------
 @app.on_event("startup")
 async def startup():
-    # достаточно initialize(); start() не нужен при webhook-режиме
-    await bots.client_app.initialize()
+    try:
+        # достаточно initialize(); start() не нужен при webhook-режиме
+        await bots.client_app.initialize()
 
-    # # 2. сбрасываем старый веб-хук, чтобы Telegram «забыл» прежний secret
-    await bots.client_app.bot.delete_webhook(drop_pending_updates=True)
+        # # 2. сбрасываем старый веб-хук, чтобы Telegram «забыл» прежний secret
+        await bots.client_app.bot.delete_webhook(drop_pending_updates=True)
 
-    await bots.client_app.bot.set_webhook(
-        f"{settings.webhook_base}/tg/callback/",
-        secret_token=settings.bot_secret,
-    )
+        await bots.client_app.bot.set_webhook(
+            f"{settings.webhook_base}/tg/callback/",
+            secret_token=settings.bot_secret,
+        )
+    except Exception as e:
+        print(f"startup error: {str(e)}")
