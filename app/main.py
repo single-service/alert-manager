@@ -74,6 +74,10 @@ async def metabase_alert(
 ):
     # Выводим тело запроса (payload)
     metabase_raw_data = await request.body()
+    metabase_raw_data = metabase_raw_data.decode()
+    print("metabase_raw_data:", str(metabase_raw_data))
+    if not metabase_raw_data:
+        return {"status": "OK"}
     metabase_data = json.loads(metabase_raw_data)
     question_name = metabase_data.get("data", {}).get("question_name")
     col_names = metabase_data.get("data", {}).get("raw_data", {}).get("cols", [])
