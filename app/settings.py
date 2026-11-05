@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     bot_secret: str                  # общий secret для телеграма
     AUTH_TOKEN: str
     TARGET_CHAT_ID: str
+    TELEGRAM_PROXY: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

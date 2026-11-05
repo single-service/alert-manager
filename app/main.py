@@ -90,6 +90,68 @@ async def metabase_alert(
     await send_message(message)
     return {"status": "OK"}
 
+
+@app.post(
+    "/alerts/backup/",
+    dependencies=[Depends(check_api_token)],
+    status_code=200,
+    openapi_extra={
+        "requestBody": {
+            "required": False,
+            "content": {
+                "application/json": {
+                    "schema": {"type": "object"},
+                    "example": {
+                        "database": "qrm_db",
+                        "task_id": 12,
+                        "operation_id": 345,
+                        "status": "error",
+                        "dump_path": "/dumps/qrm_db.sql.gz",
+                        "error": "pg_dump failed",
+                    },
+                }
+            },
+        }
+    },
+)
+async def backup_alert(
+    request: Request,
+):
+    backup_raw_data = await request.body()
+    backup_raw_data = backup_raw_data.decode()
+    print("backup_raw_data:", backup_raw_data)
+    if not backup_raw_data:
+        return {"status": "OK"}
+
+    backup_data = json.loads(backup_raw_data)
+
+    database = backup_data.get("database")
+    task_id = backup_data.get("task_id")
+    operation_id = backup_data.get("operation_id")
+    status = backup_data.get("status")
+    dump_path = backup_data.get("dump_path")
+    error = backup_data.get("error")
+
+    if status == "success":
+        message_lines = [
+            f"✅ Дамп БД «{database}» создан успешно",
+            f"Операция: #{operation_id} (задача #{task_id})",
+        ]
+        if dump_path:
+            message_lines.append(f"Файл: {dump_path}")
+    else:
+        message_lines = [
+            f"❌ Дамп БД «{database}» завершился с ошибкой",
+            f"Операция: #{operation_id} (задача #{task_id})",
+            f"Ошибка: {(error or 'неизвестная ошибка')[:1000]}",
+        ]
+
+    message = "\n".join(message_lines)
+    print(f"Backup message: {message}")
+    await send_message(message)
+    return {"status": "OK"}
+
+
 @app.post(
         "/alerts/simple/",
         dependencies=[Depends(check_api_token)],
